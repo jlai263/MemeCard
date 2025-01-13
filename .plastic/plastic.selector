@@ -1,0 +1,4 @@
+repository "Meme Card/Meme Card@1374458539968@cloud"
+  path "/"
+    br "/main"
+    co "/main"
