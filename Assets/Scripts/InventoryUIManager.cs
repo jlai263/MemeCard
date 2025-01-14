@@ -12,12 +12,14 @@ public class InventoryUIManager : MonoBehaviour
     public Button quicksellButton; // Assign in Inspector
     public Button tradeButton; // Assign in Inspector
     public Button closeDetailsButton; // Assign in Inspector
+    public GameObject player; // Assign the player GameObject in the Inspector
 
     private Card selectedCard; // Store the currently selected card
+    private PlayerMovement playerMovement; // Reference to the PlayerMovement script
+    private PlayerFirstPersonController playerCamera;
 
     void Start()
     {
-        Debug.Log("InventoryUIManager script initialized."); // Log initialization
         InventoryCanvas.SetActive(false); // Ensure inventory and details panel are hidden at start
         cardDetailsPanel.SetActive(false);
 
@@ -29,6 +31,12 @@ public class InventoryUIManager : MonoBehaviour
         else
         {
             Debug.LogError("CloseDetailsButton is not assigned in the Inspector!");
+        }
+        // Get player movement and camera scripts
+        if (player != null)
+        {
+            playerMovement = player.GetComponent<PlayerMovement>();
+            playerCamera = player.GetComponentInChildren<PlayerFirstPersonController>();
         }
     }
 
@@ -52,6 +60,11 @@ public class InventoryUIManager : MonoBehaviour
         {
             // Populate inventory when opening
             PopulateInventory();
+            DisablePlayerControls();
+        }
+        else
+        {
+            EnablePlayerControls();
         }
 
         // Show/hide cursor and lock state
@@ -165,5 +178,16 @@ public class InventoryUIManager : MonoBehaviour
     {
         cardDetailsPanel.SetActive(false);
         selectedCard = null;
+    }
+    private void DisablePlayerControls()
+    {
+        if (playerMovement != null) playerMovement.enabled = false;
+        if (playerCamera != null) playerCamera.enabled = false;
+    }
+
+    private void EnablePlayerControls()
+    {
+        if (playerMovement != null) playerMovement.enabled = true;
+        if (playerCamera != null) playerCamera.enabled = true;
     }
 }
