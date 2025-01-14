@@ -7,6 +7,7 @@ public class PackOpeningZone : MonoBehaviour
     public Text cardNameText; // Assign this in the Inspector
     public Text cardDetailsText; // Assign this in the Inspector
     public Image cardImage; // Assign this in the Inspector
+    public Image cardBorder; // Assign this in the Inspector
     public Button addToInventoryButton; // Assign this in the Inspector
     public Button quicksellButton; // Assign this in the Inspector
     public string packName = "2024 Pack"; // Set this to the name of the pack
@@ -64,8 +65,7 @@ public class PackOpeningZone : MonoBehaviour
         {
             Debug.Log($"Opening {packName}...");
 
-            // Ensure all references are set before proceeding
-            if (cardOpeningUI == null || cardNameText == null || cardDetailsText == null)
+            if (cardOpeningUI == null || cardNameText == null || cardDetailsText == null || cardImage == null || cardBorder == null)
             {
                 Debug.LogError("UI references are not assigned in the Inspector!");
                 return;
@@ -73,16 +73,9 @@ public class PackOpeningZone : MonoBehaviour
 
             // Card data
             string[] cardNames = { "Military Man", "Moo Deng", "Turkish Quandale Dingle", "Conscious Baby", 
-                                   "Steve", "Chill Guy", "Hawk Tuah", "The Rizzler", 
-                                   "Le-sunshine", "Low Taper Fade" };
+                                "Steve", "Chill Guy", "Hawk Tuah", "The Rizzler", 
+                                "Le-sunshine", "Low Taper Fade" };
             int[] rarities = { 1, 1, 2, 2, 3, 3, 4, 4, 5, 5 }; // Sorted by rarity
-
-            // Validate data
-            if (cardNames.Length != rarities.Length)
-            {
-                Debug.LogError("Card names and rarities arrays are not the same length!");
-                return;
-            }
 
             // Weighted probabilities for rarities
             float[] rarityOdds = { 0.65f, 0.20f, 0.10f, 0.04f, 0.01f };
@@ -96,8 +89,12 @@ public class PackOpeningZone : MonoBehaviour
             // Randomly select a card from the filtered list
             string cardName = filteredNames[Random.Range(0, filteredNames.Length)];
 
-            // Assign a random border
-            int borderKey = Random.Range(1, 6); // Randomly select a border
+            // Weighted probabilities for borders
+            float[] borderOdds = { 0.50f, 0.25f, 0.15f, 0.08f, 0.02f };
+
+            // Get a random border based on weights
+            int borderKey = GetWeightedRandom(borderOdds);
+
             if (!CardManager.Instance.Borders.ContainsKey(borderKey))
             {
                 Debug.LogError($"Border with key {borderKey} not found!");
@@ -109,12 +106,10 @@ public class PackOpeningZone : MonoBehaviour
             float finalValue = baseValue * borderInfo.Modifier; // Use Modifier property
 
             // Create the card
-            currentCard = new Card(cardName, selectedRarity, borderInfo.Name, finalValue);
+            currentCard = new Card(cardName, selectedRarity, borderKey, finalValue);
 
             // Display the card in the UI
             ShowCardUI();
-            cardNameText.text = currentCard.Name;
-            cardDetailsText.text = $"{CardManager.Instance.RarityTiers[selectedRarity - 1]} - {currentCard.Border}\nValue: {currentCard.Value} Dogecoin";
         }
         else
         {
@@ -145,6 +140,19 @@ public class PackOpeningZone : MonoBehaviour
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Make the cursor visible
         cardOpeningUI.SetActive(true); // Show the UI
+
+        // Set card image and border
+        Sprite cardSprite = CardManager.Instance.GetCardImage(currentCard.Name);
+        Sprite borderSprite = CardManager.Instance.GetBorderSprite(currentCard.Border);
+
+        if (cardSprite != null) cardImage.sprite = cardSprite;
+        else Debug.LogError($"Card image for {currentCard.Name} not found!");
+
+        if (borderSprite != null) cardBorder.sprite = borderSprite;
+        else Debug.LogError($"Border sprite for border key {currentCard.Border} not found!");
+
+        cardNameText.text = currentCard.Name;
+        cardDetailsText.text = $"{CardManager.Instance.RarityTiers[currentCard.Rarity - 1]} - {CardManager.Instance.Borders[currentCard.Border].Name}\nValue: {currentCard.Value} Dogecoin";
 
         // Disable player movement and camera
         if (playerMovement != null) playerMovement.enabled = false;

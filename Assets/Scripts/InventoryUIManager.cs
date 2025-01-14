@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class InventoryUIManager : MonoBehaviour
 {
@@ -92,14 +93,14 @@ public class InventoryUIManager : MonoBehaviour
             // Instantiate the prefab
             GameObject cardSlot = Instantiate(cardSlotPrefab, cardGrid);
 
-            // Find and modify the Image component directly on the cardSlotPrefab
-            Image cardSlotImage = cardSlot.GetComponent<Image>();
-            if (cardSlotImage != null)
+            // Find and update the CardImage
+            Image cardImage = cardSlot.transform.Find("CardImage")?.GetComponent<Image>();
+            if (cardImage != null)
             {
                 Sprite cardSprite = CardManager.Instance.GetCardImage(card.Name);
                 if (cardSprite != null)
                 {
-                    cardSlotImage.sprite = cardSprite;
+                    cardImage.sprite = cardSprite;
                 }
                 else
                 {
@@ -108,18 +109,38 @@ public class InventoryUIManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Image component is missing on cardSlotPrefab!");
+                Debug.LogError("CardImage component is missing in prefab!");
             }
 
             // Find and update the CardName text
-            Text cardName = cardSlot.transform.Find("CardName")?.GetComponent<Text>();
+            TextMeshProUGUI cardName = cardSlot.transform.Find("CardName")?.GetComponent<TextMeshProUGUI>();
             if (cardName != null)
             {
                 cardName.text = card.Name;
             }
             else
             {
-                Debug.LogError("CardName component is missing in prefab!");
+                Debug.LogError("CardName (TMP) component is missing in prefab!");
+            }
+
+            // Find and update the CardBorder
+            Image cardBorder = cardSlot.transform.Find("CardBorder")?.GetComponent<Image>();
+            if (cardBorder != null)
+            {
+                // Use the border tier of the card
+                Sprite borderSprite = CardManager.Instance.GetBorderSprite(card.Border);
+                if (borderSprite != null)
+                {
+                    cardBorder.sprite = borderSprite;
+                }
+                else
+                {
+                    Debug.LogError($"Border sprite for card {card.Name} with border tier {card.Border} not found!");
+                }
+            }
+            else
+            {
+                Debug.LogError("CardBorder component is missing in prefab!");
             }
 
             // Add a button click listener to show card details
@@ -134,9 +155,6 @@ public class InventoryUIManager : MonoBehaviour
             }
         }
     }
-
-
-
 
     public void ShowCardDetails(Card card)
     {
@@ -179,6 +197,7 @@ public class InventoryUIManager : MonoBehaviour
         cardDetailsPanel.SetActive(false);
         selectedCard = null;
     }
+
     private void DisablePlayerControls()
     {
         if (playerMovement != null) playerMovement.enabled = false;

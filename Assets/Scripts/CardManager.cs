@@ -11,6 +11,9 @@ public class CardManager : MonoBehaviour
     // A dictionary to store card images with their names as keys
     public Dictionary<string, Sprite> CardImages = new Dictionary<string, Sprite>();
 
+    // A dictionary to store border images based on rarity
+    public Dictionary<int, Sprite> BorderSprites = new Dictionary<int, Sprite>();
+
     private void Awake()
     {
         if (Instance == null)
@@ -19,6 +22,7 @@ public class CardManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             InitializeBorders();
             LoadCardImages();
+            LoadBorderSprites();
         }
         else
         {
@@ -51,6 +55,25 @@ public class CardManager : MonoBehaviour
         CardImages.Add("Steve", Resources.Load<Sprite>("CardSprites/Steve"));
     }
 
+    // Load border images into the dictionary
+    private void LoadBorderSprites()
+    {
+        // Ensure the border names match the Resources folder structure
+        BorderSprites[1] = Resources.Load<Sprite>("Borders/Border1");
+        BorderSprites[2] = Resources.Load<Sprite>("Borders/Border2");
+        BorderSprites[3] = Resources.Load<Sprite>("Borders/Border3");
+        BorderSprites[4] = Resources.Load<Sprite>("Borders/Border4");
+        BorderSprites[5] = Resources.Load<Sprite>("Borders/Border5");
+
+        // Debugging for missing borders
+        foreach (var rarity in BorderSprites.Keys)
+        {
+            if (BorderSprites[rarity] == null)
+            {
+                Debug.LogError($"Border sprite for rarity {rarity} is missing!");
+            }
+        }
+    }
 
     // Method to get a card image by name
     public Sprite GetCardImage(string cardName)
@@ -62,6 +85,20 @@ public class CardManager : MonoBehaviour
         else
         {
             Debug.LogError($"Card image for {cardName} not found!");
+            return null;
+        }
+    }
+
+    // Method to get a border sprite by rarity
+    public Sprite GetBorderSprite(int rarity)
+    {
+        if (BorderSprites.TryGetValue(rarity, out Sprite borderSprite))
+        {
+            return borderSprite;
+        }
+        else
+        {
+            Debug.LogError($"Border sprite for rarity {rarity} not found!");
             return null;
         }
     }
